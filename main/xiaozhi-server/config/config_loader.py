@@ -68,6 +68,12 @@ def get_config_from_api(config):
             "vision_explain": config["server"].get("vision_explain", ""),
             "auth_key": config["server"].get("auth_key", ""),
         }
+    
+    # plugins配置以本地为准（重要：保留本地插件配置）
+    if config.get("plugins"):
+        config_data["plugins"] = config["plugins"]
+        print(f"已加载本地plugins配置: {list(config['plugins'].keys())}")
+    
     return config_data
 
 

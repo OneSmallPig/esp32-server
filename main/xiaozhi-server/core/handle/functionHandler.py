@@ -65,9 +65,16 @@ class FunctionHandler:
 
     def register_config_functions(self):
         """注册配置中的函数,可以不同客户端使用不同的配置"""
-        for func in self.config["Intent"][self.config["selected_module"]["Intent"]].get(
-            "functions", []
-        ):
+        config_functions = self.config["Intent"][self.config["selected_module"]["Intent"]].get("functions", [])
+        
+        # 强制添加send_email到函数列表（如果不存在的话）
+        if "send_email" not in config_functions:
+            config_functions = config_functions + ["send_email"]
+            self.conn.logger.bind(tag=TAG, session_id=self.conn.session_id).info(
+                "已自动添加send_email插件到函数列表"
+            )
+        
+        for func in config_functions:
             self.function_registry.register_function(func)
 
         """home assistant需要初始化提示词"""
