@@ -85,6 +85,9 @@ class FunctionHandler:
 
     def handle_llm_function_call(self, conn, function_call_data):
         try:
+            # 添加调试日志，查看完整的function_call_data
+            self.conn.logger.bind(tag=TAG).info(f"收到function_call_data: {function_call_data}")
+            
             function_name = function_call_data["name"]
             funcItem = self.get_function(function_name)
             if not funcItem:
@@ -93,7 +96,52 @@ class FunctionHandler:
                 )
             func = funcItem.func
             arguments = function_call_data["arguments"]
-            arguments = json.loads(arguments) if arguments else {}
+            
+            # 添加调试日志，查看原始arguments
+            self.conn.logger.bind(tag=TAG).info(f"原始arguments: {repr(arguments)}")
+            
+            # 修复可能的JSON格式错误：处理连续的JSON对象
+            if arguments:
+                try:
+                    arguments = json.loads(arguments)
+                except json.JSONDecodeError as e:
+                    # 尝试修复连续JSON对象的问题
+                    if '}{"' in arguments:
+                        self.conn.logger.bind(tag=TAG).warning(f"检测到连续JSON对象，尝试修复: {e}")
+                        # 分割连续的JSON对象
+                        json_parts = []
+                        current_part = ""
+                        brace_count = 0
+                        
+                        for char in arguments:
+                            if char == '{':
+                                if brace_count == 0 and current_part:
+                                    # 开始新的JSON对象
+                                    json_parts.append(current_part)
+                                    current_part = ""
+                                brace_count += 1
+                            elif char == '}':
+                                brace_count -= 1
+                            current_part += char
+                        
+                        if current_part:
+                            json_parts.append(current_part)
+                        
+                        # 解析并合并所有JSON对象
+                        merged_args = {}
+                        for part in json_parts:
+                            try:
+                                part_args = json.loads(part)
+                                merged_args.update(part_args)
+                            except json.JSONDecodeError:
+                                continue
+                        
+                        arguments = merged_args
+                        self.conn.logger.bind(tag=TAG).info(f"修复后的arguments: {arguments}")
+                    else:
+                        raise e
+            else:
+                arguments = {}
             self.conn.logger.bind(tag=TAG).debug(
                 f"调用函数: {function_name}, 参数: {arguments}"
             )
