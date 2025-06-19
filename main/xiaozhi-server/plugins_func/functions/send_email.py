@@ -316,7 +316,7 @@ def send_email(conn, recipient_alias: str, location: str = None, lang: str = "zh
         )
         
         # 生成邮件主题
-        subject = f"🌤️ {current_date}天气播报 - 来自小智的贴心提醒"
+        subject = f"🌤️ {current_date}天气播报 - 来自小猪的贴心提醒"
         
         # 发送邮件
         success = send_email_smtp(
