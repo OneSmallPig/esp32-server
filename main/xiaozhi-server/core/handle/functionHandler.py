@@ -81,6 +81,13 @@ class FunctionHandler:
                 "已自动添加save_weather_to_db插件到函数列表"
             )
         
+        # 强制添加onvif_camera_control到函数列表（如果不存在的话）
+        if "onvif_camera_control" not in config_functions:
+            config_functions = config_functions + ["onvif_camera_control"]
+            self.conn.logger.bind(tag=TAG, session_id=self.conn.session_id).info(
+                "已自动添加onvif_camera_control插件到函数列表"
+            )
+        
         for func in config_functions:
             self.function_registry.register_function(func)
 

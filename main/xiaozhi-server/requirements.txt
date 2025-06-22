@@ -35,3 +35,6 @@ mcp-proxy==0.6.0
 PyJWT==2.8.0
 psutil==7.0.0
 portalocker==2.10.1
+onvif-zeep==0.2.12
+zeep==4.2.1
+Pillow>=9.0.0
