@@ -88,6 +88,13 @@ class FunctionHandler:
                 "已自动添加onvif_camera_control插件到函数列表"
             )
         
+        # 强制添加vision_camera_analysis到函数列表（如果不存在的话）
+        if "vision_camera_analysis" not in config_functions:
+            config_functions = config_functions + ["vision_camera_analysis"]
+            self.conn.logger.bind(tag=TAG, session_id=self.conn.session_id).info(
+                "已自动添加vision_camera_analysis插件到函数列表"
+            )
+        
         for func in config_functions:
             self.function_registry.register_function(func)
 
