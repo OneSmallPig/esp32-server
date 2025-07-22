@@ -1,0 +1,63 @@
+# 天气缓存池配置示例
+# 将以下配置添加到你的 config.yaml 或 .config.yaml 文件中
+
+plugins:
+  # 原有的天气配置保持不变
+  get_weather: 
+    api_host: "mj7p3y7naa.re.qweatherapi.com"
+    api_key: "a861d0d5e7bf4ee1a83d9a9e4f96d4da"
+    default_location: "广州"
+  
+  # 新增：天气缓存池配置
+  weather_cache:
+    # 天气数据缓存时间（秒），建议1-3小时
+    # 天气数据更新频率不高，1小时缓存可以大幅减少API调用
+    weather_cache_ttl: 3600  # 1小时 = 3600秒
+    
+    # 城市信息缓存时间（秒），建议24小时
+    # 城市信息基本不变，可以缓存更长时间
+    city_cache_ttl: 86400   # 24小时 = 86400秒
+    
+    # 最大缓存条目数，防止内存过度占用
+    # 50个条目大约占用几MB内存，可根据服务器配置调整
+    max_cache_size: 50
+    
+    # 是否启用异步刷新（高级功能）
+    # 启用后，缓存即将过期时会后台更新，用户感知不到延迟
+    enable_async_refresh: true
+    
+    # 缓存清理间隔（秒），定期清理过期缓存
+    cleanup_interval: 1800  # 30分钟清理一次
+    
+    # 性能监控配置
+    enable_stats: true      # 是否启用统计功能
+    log_cache_hits: false   # 是否记录缓存命中日志（调试用）
+
+# 插件函数配置更新
+# 要使用缓存版本的天气查询，需要在意图识别中加载新的插件
+Intent:
+  function_call:
+    type: function_call
+    functions:
+      # 原有插件保持不变
+      - get_weather          # 原版天气查询
+      - get_weather_cached   # 新增：缓存版本天气查询（推荐）
+      - change_role
+      - get_news_from_chinanews
+      # ... 其他插件
+
+# 日志配置建议
+log:
+  # 开发环境建议使用DEBUG查看缓存命中情况
+  log_level: INFO  # 生产环境用INFO，调试用DEBUG
+  
+# 推荐的使用方式：
+# 1. 默认使用 get_weather_cached 替代 get_weather
+# 2. 当需要最新数据时，用户可以说"强制刷新天气"来获取实时数据
+# 3. 定期监控缓存命中率，优化缓存策略
+
+# 性能提升预期：
+# - 缓存命中时响应时间从2-5秒降低到0.1-0.3秒
+# - API调用次数减少60-80%（取决于查询重复率）
+# - 服务器负载显著降低
+# - 用户体验明显改善 
